@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医生登录</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom right, #89f7fe, #66a6ff);
+            font-family: Arial, sans-serif;
+        }
+
+        .login-container {
+            width: 400px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .login-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .login-input {
+            margin-bottom: 15px;
+        }
+
+        .login-button {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="login-container">
+            <div class="login-header">医生问诊系统</div>
+            <el-form :model="loginForm" @submit.native.prevent="handleLogin">
+                <el-form-item class="login-input">
+                    <el-input v-model="loginForm.username" placeholder="用户名" prefix-icon="el-icon-user"></el-input>
+                </el-form-item>
+                <el-form-item class="login-input">
+                    <el-input type="password" v-model="loginForm.password" placeholder="密码" prefix-icon="el-icon-lock"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" class="login-button" @click="handleLogin">登录</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    loginForm: {
+                        username: '',
+                        password: ''
+                    }
+                };
+            },
+            methods: {
+                handleLogin() {
+                    axios.post('/login', this.loginForm)
+                        .then(response => {
+                            if (response.data.success) {
+                                window.location.href = 'exit.html';
+                            } else {
+                                this.$message.error('登录失败，请检查用户名和密码');
+                            }
+                        })
+                        .catch(error => {
+                            this.$message.error('登录失败，请稍后再试');
+                        });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

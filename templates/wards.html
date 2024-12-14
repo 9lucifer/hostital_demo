@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>病房信息</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/pub.css" type="text/css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="list-group">
+                <a href="/patientsi" class="list-group-item list-group-item-action">病人信息</a>
+                <a href="/wardsi" class="list-group-item list-group-item-action">病房信息</a>
+                <a href="/doctorsi" class="list-group-item list-group-item-action">医生信息</a>
+                <a href="/admissionsi" class="list-group-item list-group-item-action">住院记录</a>
+                <a href="/billsi" class="list-group-item list-group-item-action">账单信息</a>
+            </div>
+        </div>
+        <div class="content">
+            <h2>病房信息</h2>
+            <input type="text" id="ward-search" class="form-control" placeholder="搜索病房" />
+            <table class="table table-striped" id="wards-table">
+                <thead>
+                    <tr>
+                        <th>位置</th>
+                        <th>房间类型</th>
+                        <th>收费标准</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 病房信息动态填充 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Edit Ward Modal -->
+    <div class="modal fade" id="editWardModal" tabindex="-1" aria-labelledby="editWardModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editWardModalLabel">修改病房信息</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editWardForm">
+                        <input type="hidden" id="editWardID">
+                        <div class="form-group">
+                            <label for="editWardLocation">位置</label>
+                            <input type="text" class="form-control" id="editWardLocation" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editWardRoomTypeCode">房间类型</label>
+                            <input type="text" class="form-control" id="editWardRoomTypeCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editWardFeeStandard">收费标准</label>
+                            <input type="number" class="form-control" id="editWardFeeStandard" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editWardStatus">状态</label>
+                            <input type="text" class="form-control" id="editWardStatus" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AJAX 请求获取病房数据
+        function loadWards() {
+            $.ajax({
+                url: '/wards',
+                method: 'GET',
+                success: function(data) {
+                    let wardsTableBody = $('#wards-table tbody');
+                    wardsTableBody.empty();
+                    data.forEach(ward => {
+                        wardsTableBody.append(`
+                            <tr>
+                                <td>${ward.Location}</td>
+                                <td>${ward.RoomTypeCode}</td>
+                                <td>${ward.FeeStandard}</td>
+                                <td>${ward.Status}</td>
+                                <td><button class="btn btn-info" onclick="editWard(${ward.WardID})">修改</button></td>
+                            </tr>
+                        `);
+                    });
+                },
+                error: function() {
+                    alert("无法加载病房信息");
+                }
+            });
+        }
+
+        // 编辑病房信息
+        function editWard(wardID) {
+            $.ajax({
+                url: `/wards/${wardID}`,
+                method: 'GET',
+                success: function(ward) {
+                    $('#editWardID').val(ward.WardID);
+                    $('#editWardLocation').val(ward.Location);
+                    $('#editWardRoomTypeCode').val(ward.RoomTypeCode);
+                    $('#editWardFeeStandard').val(ward.FeeStandard);
+                    $('#editWardStatus').val(ward.Status);
+                    $('#editWardModal').modal('show');
+                },
+                error: function() {
+                    alert("无法加载病房信息");
+                }
+            });
+        }
+
+        // 提交修改病房信息
+        $('#editWardForm').submit(function(event) {
+            event.preventDefault();
+            const wardID = $('#editWardID').val();
+            const updatedWard = {
+                Location: $('#editWardLocation').val(),
+                RoomTypeCode: $('#editWardRoomTypeCode').val(),
+                FeeStandard: $('#editWardFeeStandard').val(),
+                Status: $('#editWardStatus').val()
+            };
+            $.ajax({
+                url: `/wards/${wardID}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedWard),
+                success: function() {
+                    $('#editWardModal').modal('hide');
+                    loadWards();
+                },
+                error: function() {
+                    alert("无法更新病房信息");
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            loadWards();
+        });
+    </script>
+</body>
+</html>

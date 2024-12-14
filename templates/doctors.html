@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医生信息</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/pub.css" type="text/css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="list-group">
+                <a href="/patientsi" class="list-group-item list-group-item-action">病人信息</a>
+                <a href="/wardsi" class="list-group-item list-group-item-action">病房信息</a>
+                <a href="/doctorsi" class="list-group-item list-group-item-action">医生信息</a>
+                <a href="/admissionsi" class="list-group-item list-group-item-action">住院记录</a>
+                <a href="/billsi" class="list-group-item list-group-item-action">账单信息</a>
+            </div>
+        </div>
+        <div class="content">
+            <h2>医生信息 <button class="btn btn-primary" onclick="showAddDoctorModal()">添加医生</button></h2>
+            <input type="text" id="doctor-search" class="form-control" placeholder="搜索医生" />
+            <table class="table table-striped" id="doctors-table">
+                <thead>
+                    <tr>
+                        <th>姓名</th>
+                        <th>科室</th>
+                        <th>职位</th>
+                        <th>修改</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 医生信息动态填充 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Doctor Modal -->
+    <div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDoctorModalLabel">添加医生</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addDoctorForm">
+                        <div class="form-group">
+                            <label for="addDoctorName">姓名</label>
+                            <input type="text" class="form-control" id="addDoctorName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addDoctorGender">性别</label>
+                            <input type="text" class="form-control" id="addDoctorGender" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addDoctorDepartment">科室</label>
+                            <input type="text" class="form-control" id="addDoctorDepartment" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addDoctorPosition">职位</label>
+                            <input type="text" class="form-control" id="addDoctorPosition" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addDoctorUsername">账号</label>
+                            <input type="text" class="form-control" id="addDoctorUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addDoctorPassword">密码</label>
+                            <input type="password" class="form-control" id="addDoctorPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">添加医生</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Doctor Modal -->
+    <div class="modal fade" id="editDoctorModal" tabindex="-1" aria-labelledby="editDoctorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDoctorModalLabel">修改医生</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDoctorForm">
+                        <input type="hidden" id="editDoctorID">
+                        <div class="form-group">
+                            <label for="editDoctorName">姓名</label>
+                            <input type="text" class="form-control" id="editDoctorName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorGender">性别</label>
+                            <input type="text" class="form-control" id="editDoctorGender" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorDepartment">科室</label>
+                            <input type="text" class="form-control" id="editDoctorDepartment" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorPosition">职位</label>
+                            <input type="text" class="form-control" id="editDoctorPosition" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorUsername">账号</label>
+                            <input type="text" class="form-control" id="editDoctorUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorPassword">密码</label>
+                            <input type="password" class="form-control" id="editDoctorPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AJAX 请求获取医生数据
+        function loadDoctors() {
+            $.ajax({
+                url: '/doctors',
+                method: 'GET',
+                success: function(data) {
+                    let doctorsTableBody = $('#doctors-table tbody');
+                    doctorsTableBody.empty();
+                    data.forEach(doctor => {
+                        doctorsTableBody.append(`
+                            <tr>
+                                <td>${doctor.Name}</td>
+                                <td>${doctor.Department}</td>
+                                <td>${doctor.Position}</td>
+                                <td><button class="btn btn-info" onclick="editDoctor(${doctor.DoctorID})">修改</button></td>
+                                <td><button class="btn btn-danger" onclick="deleteDoctor(${doctor.DoctorID})">删除</button></td>
+                            </tr>
+                        `);
+                    });
+                },
+                error: function() {
+                    alert("无法加载医生信息");
+                }
+            });
+        }
+
+        // 显示添加医生模态框
+        function showAddDoctorModal() {
+            $('#addDoctorModal').modal('show');
+        }
+
+        // 提交添加医生表单
+        $('#addDoctorForm').submit(function(event) {
+            event.preventDefault();
+            const newDoctor = {
+                Name: $('#addDoctorName').val(),
+                Gender: $('#addDoctorGender').val(),
+                Department: $('#addDoctorDepartment').val(),
+                Position: $('#addDoctorPosition').val(),
+                Username: $('#addDoctorUsername').val(),
+                Password: $('#addDoctorPassword').val()
+            };
+            $.ajax({
+                url: '/doctors',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(newDoctor),
+                success: function() {
+                    $('#addDoctorModal').modal('hide');
+                    loadDoctors();
+                },
+                error: function() {
+                    alert("无法添加医生");
+                }
+            });
+        });
+
+        // 编辑医生信息
+        function editDoctor(doctorID) {
+            $.ajax({
+                url: `/doctors/${doctorID}`,
+                method: 'GET',
+                success: function(doctor) {
+                    $('#editDoctorID').val(doctor.DoctorID);
+                    $('#editDoctorName').val(doctor.Name);
+                    $('#editDoctorGender').val(doctor.Gender);
+                    $('#editDoctorDepartment').val(doctor.Department);
+                    $('#editDoctorPosition').val(doctor.Position);
+                    $('#editDoctorUsername').val(doctor.Username);
+                    $('#editDoctorPassword').val(doctor.Password);
+                    $('#editDoctorModal').modal('show');
+                },
+                error: function() {
+                    alert("无法加载医生信息");
+                }
+            });
+        }
+
+        // 提交修改医生信息
+        $('#editDoctorForm').submit(function(event) {
+            event.preventDefault();
+            const doctorID = $('#editDoctorID').val();
+            const updatedDoctor = {
+                Name: $('#editDoctorName').val(),
+                Gender: $('#editDoctorGender').val(),
+                Department: $('#editDoctorDepartment').val(),
+                Position: $('#editDoctorPosition').val(),
+                Username: $('#editDoctorUsername').val(),
+                Password: $('#editDoctorPassword').val()
+            };
+            $.ajax({
+                url: `/doctors/${doctorID}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedDoctor),
+                success: function() {
+                    $('#editDoctorModal').modal('hide');
+                    loadDoctors();
+                },
+                error: function() {
+                    alert("无法更新医生信息");
+                }
+            });
+        });
+
+        // 删除医生信息
+        function deleteDoctor(doctorID) {
+            if (confirm("确定要删除这条记录吗？")) {
+                $.ajax({
+                    url: `/doctors/${doctorID}`,
+                    method: 'DELETE',
+                    success: function() {
+                        loadDoctors();
+                    },
+                    error: function() {
+                        alert("无法删除医生信息");
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            loadDoctors();
+        });
+    </script>
+</body>
+</html>

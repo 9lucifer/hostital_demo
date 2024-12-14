@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查看病人信息</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #e0f7fa, #80deea);
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            margin: 40px auto;
+            max-width: 800px;
+        }
+
+        .el-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .el-form-item {
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            color: #007bff;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部标题 -->
+        <div class="header">
+            查看病人信息
+        </div>
+
+        <!-- 信息展示容器 -->
+        <div class="container">
+            <el-card>
+                <div slot="header" class="info-title">病人及诊断信息</div>
+                <el-table :data="records" style="width: 100%">
+                    <el-table-column prop="patient_name" label="患者姓名" width="180"></el-table-column>
+                    <el-table-column prop="record_date" label="记录日期" width="180"></el-table-column>
+                    <el-table-column label="操作">
+                        <template slot-scope="scope">
+                            <el-button @click="viewDetails(scope.row)" type="primary" size="small">查看</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-card>
+        </div>
+
+        <!-- 弹窗 -->
+        <el-dialog :visible.sync="dialogVisible" title="详细信息">
+            <el-form :model="selectedRecord" label-width="120px">
+                <el-form-item label="患者姓名">
+                    <el-input v-model="selectedRecord.patient_name" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="症状记录">
+                    <el-input type="textarea" v-model="selectedRecord.symptom_record" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="治疗方案">
+                    <el-input type="textarea" v-model="selectedRecord.treatment_plan" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="病房ID">
+                    <el-input v-model="selectedRecord.ward_id" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="床位ID">
+                    <el-input v-model="selectedRecord.bed_id" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="入院日期">
+                    <el-input v-model="selectedRecord.admission_date" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="预计出院日期">
+                    <el-input v-model="selectedRecord.expected_discharge_date" disabled></el-input>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    records: [],
+                    dialogVisible: false,
+                    selectedRecord: {}
+                };
+            },
+            created() {
+                this.fetchRecords();
+            },
+            methods: {
+                fetchRecords() {
+                    axios.get('/medical_records')
+                        .then(response => {
+                            this.records = response.data;
+                        })
+                        .catch(error => {
+                            this.$message.error('无法加载记录');
+                        });
+                },
+                viewDetails(record) {
+                    this.selectedRecord = record;
+                    this.dialogVisible = true;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

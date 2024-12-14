@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>住院记录</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/pub.css" type="text/css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="list-group">
+                <a href="/patientsi" class="list-group-item list-group-item-action">病人信息</a>
+                <a href="/wardsi" class="list-group-item list-group-item-action">病房信息</a>
+                <a href="/doctorsi" class="list-group-item list-group-item-action">医生信息</a>
+                <a href="/admissionsi" class="list-group-item list-group-item-action">住院记录</a>
+                <a href="/billsi" class="list-group-item list-group-item-action">账单信息</a>
+            </div>
+        </div>
+        <div class="content">
+            <h2>住院记录 <button class="btn btn-primary" onclick="showAddAdmissionModal()">添加记录</button></h2>
+            <table class="table table-striped" id="admissions-table">
+                <thead>
+                    <tr>
+                        <th>病人ID</th>
+                        <th>病房ID</th>
+                        <th>床位ID</th>
+                        <th>入院时间</th>
+                        <th>预计出院时间</th>
+                        <th>出院时间</th>
+                        <th>修改</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 住院记录动态填充 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Admission Modal -->
+    <div class="modal fade" id="addAdmissionModal" tabindex="-1" aria-labelledby="addAdmissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAdmissionModalLabel">添加住院记录</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAdmissionForm">
+                        <div class="form-group">
+                            <label for="addAdmissionPatientID">病人ID</label>
+                            <input type="number" class="form-control" id="addAdmissionPatientID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addAdmissionWardID">病房ID</label>
+                            <input type="number" class="form-control" id="addAdmissionWardID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addAdmissionBedID">床位ID</label>
+                            <input type="number" class="form-control" id="addAdmissionBedID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addAdmissionDate">入院时间</label>
+                            <input type="datetime-local" class="form-control" id="addAdmissionDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addExpectedDischargeDate">预计出院时间</label>
+                            <input type="datetime-local" class="form-control" id="addExpectedDischargeDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addDischargeDate">出院时间</label>
+                            <input type="datetime-local" class="form-control" id="addDischargeDate">
+                        </div>
+                        <button type="submit" class="btn btn-primary">添加记录</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Admission Modal -->
+    <div class="modal fade" id="editAdmissionModal" tabindex="-1" aria-labelledby="editAdmissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editAdmissionModalLabel">修改住院记录</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAdmissionForm">
+                        <input type="hidden" id="editAdmissionID">
+                        <div class="form-group">
+                            <label for="editAdmissionPatientID">病人ID</label>
+                            <input type="number" class="form-control" id="editAdmissionPatientID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAdmissionWardID">病房ID</label>
+                            <input type="number" class="form-control" id="editAdmissionWardID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAdmissionBedID">床位ID</label>
+                            <input type="number" class="form-control" id="editAdmissionBedID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAdmissionDate">入院时间</label>
+                            <input type="datetime-local" class="form-control" id="editAdmissionDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editExpectedDischargeDate">预计出院时间</label>
+                            <input type="datetime-local" class="form-control" id="editExpectedDischargeDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDischargeDate">出院时间</label>
+                            <input type="datetime-local" class="form-control" id="editDischargeDate">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AJAX 请求获取住院记录数据
+        function loadAdmissions() {
+            $.ajax({
+                url: '/admissions',
+                method: 'GET',
+                success: function(data) {
+                    let admissionsTableBody = $('#admissions-table tbody');
+                    admissionsTableBody.empty();
+                    data.forEach(admission => {
+                        let dischargeDate = admission.DischargeDate ? admission.DischargeDate : '治疗中';
+                        admissionsTableBody.append(`
+                            <tr>
+                                <td>${admission.PatientID}</td>
+                                <td>${admission.WardID}</td>
+                                <td>${admission.BedID}</td>
+                                <td>${admission.AdmissionDate}</td>
+                                <td>${admission.ExpectedDischargeDate}</td>
+                                <td>${dischargeDate}</td>
+                                <td><button class="btn btn-info" onclick="editAdmission(${admission.AdmissionID})">修改</button></td>
+                                <td><button class="btn btn-danger" onclick="deleteAdmission(${admission.AdmissionID})">删除</button></td>
+                            </tr>
+                        `);
+                    });
+                },
+                error: function() {
+                    alert("无法加载住院记录");
+                }
+            });
+        }
+
+        // 显示添加住院记录模态框
+        function showAddAdmissionModal() {
+            $('#addAdmissionModal').modal('show');
+        }
+
+        // 提交添加住院记录表单
+        $('#addAdmissionForm').submit(function(event) {
+            event.preventDefault();
+            const newAdmission = {
+                PatientID: $('#addAdmissionPatientID').val(),
+                WardID: $('#addAdmissionWardID').val(),
+                BedID: $('#addAdmissionBedID').val(),
+                AdmissionDate: $('#addAdmissionDate').val(),
+                ExpectedDischargeDate: $('#addExpectedDischargeDate').val(),
+                DischargeDate: $('#addDischargeDate').val()
+            };
+            $.ajax({
+                url: '/admissions',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(newAdmission),
+                success: function() {
+                    $('#addAdmissionModal').modal('hide');
+                    loadAdmissions();
+                },
+                error: function() {
+                    alert("无法添加住院记录");
+                }
+            });
+        });
+
+        // 编辑住院记录
+        function editAdmission(admissionID) {
+            $.ajax({
+                url: `/admissions/${admissionID}`,
+                method: 'GET',
+                success: function(admission) {
+                    $('#editAdmissionID').val(admission.AdmissionID);
+                    $('#editAdmissionPatientID').val(admission.PatientID);
+                    $('#editAdmissionWardID').val(admission.WardID);
+                    $('#editAdmissionBedID').val(admission.BedID);
+                    $('#editAdmissionDate').val(admission.AdmissionDate);
+                    $('#editExpectedDischargeDate').val(admission.ExpectedDischargeDate);
+                    $('#editDischargeDate').val(admission.DischargeDate);
+                    $('#editAdmissionModal').modal('show');
+                },
+                error: function() {
+                    alert("无法加载住院记录");
+                }
+            });
+        }
+
+        // 提交修改住院记录
+        $('#editAdmissionForm').submit(function(event) {
+            event.preventDefault();
+            const admissionID = $('#editAdmissionID').val();
+            const updatedAdmission = {
+                PatientID: $('#editAdmissionPatientID').val(),
+                WardID: $('#editAdmissionWardID').val(),
+                BedID: $('#editAdmissionBedID').val(),
+                AdmissionDate: $('#editAdmissionDate').val(),
+                ExpectedDischargeDate: $('#editExpectedDischargeDate').val(),
+                DischargeDate: $('#editDischargeDate').val()
+            };
+            $.ajax({
+                url: `/admissions/${admissionID}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedAdmission),
+                success: function() {
+                    $('#editAdmissionModal').modal('hide');
+                    loadAdmissions();
+                },
+                error: function() {
+                    alert("无法更新住院记录");
+                }
+            });
+        });
+
+        // 删除住院记录
+        function deleteAdmission(admissionID) {
+            if (confirm("确定要删除这条记录吗？")) {
+                $.ajax({
+                    url: `/admissions/${admissionID}`,
+                    method: 'DELETE',
+                    success: function() {
+                        loadAdmissions();
+                    },
+                    error: function() {
+                        alert("无法删除住院记录");
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            loadAdmissions();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账单信息</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/pub.css" type="text/css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="list-group">
+                <a href="/patientsi" class="list-group-item list-group-item-action">病人信息</a>
+                <a href="/wardsi" class="list-group-item list-group-item-action">病房信息</a>
+                <a href="/doctorsi" class="list-group-item list-group-item-action">医生信息</a>
+                <a href="/admissionsi" class="list-group-item list-group-item-action">住院记录</a>
+                <a href="/billsi" class="list-group-item list-group-item-action">账单信息</a>
+            </div>
+        </div>
+        <div class="content">
+            <h2>账单信息 <button class="btn btn-primary" onclick="showAddBillModal()">添加订单</button></h2>
+            <table class="table table-striped" id="bills-table">
+                <thead>
+                    <tr>
+                        <th>账单ID</th>
+                        <th>入院ID</th>
+                        <th>应付金额</th>
+                        <th>已付金额</th>
+                        <th>支付日期</th>
+                        <th>支付状态</th>
+                        <th>修改</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 账单信息动态填充 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Bill Modal -->
+    <div class="modal fade" id="addBillModal" tabindex="-1" aria-labelledby="addBillModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBillModalLabel">添加订单</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBillForm">
+                        <div class="form-group">
+                            <label for="addAdmissionID">入院ID</label>
+                            <input type="number" class="form-control" id="addAdmissionID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addAmountPayable">应付金额</label>
+                            <input type="number" step="0.01" class="form-control" id="addAmountPayable" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addAmountPaid">已付金额</label>
+                            <input type="number" step="0.01" class="form-control" id="addAmountPaid" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addPaymentDate">支付日期</label>
+                            <input type="datetime-local" class="form-control" id="addPaymentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addPaymentStatus">支付状态</label>
+                            <input type="text" class="form-control" id="addPaymentStatus" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">添加订单</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bill Modal -->
+    <div class="modal fade" id="editBillModal" tabindex="-1" aria-labelledby="editBillModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBillModalLabel">修改订单</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editBillForm">
+                        <input type="hidden" id="editBillID">
+                        <div class="form-group">
+                            <label for="editAdmissionID">入院ID</label>
+                            <input type="number" class="form-control" id="editAdmissionID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAmountPayable">应付金额</label>
+                            <input type="number" step="0.01" class="form-control" id="editAmountPayable" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAmountPaid">已付金额</label>
+                            <input type="number" step="0.01" class="form-control" id="editAmountPaid" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPaymentDate">支付日期</label>
+                            <input type="datetime-local" class="form-control" id="editPaymentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPaymentStatus">支付状态</label>
+                            <input type="text" class="form-control" id="editPaymentStatus" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // AJAX 请求获取账单数据
+        function loadBills() {
+            $.ajax({
+                url: '/bills',
+                method: 'GET',
+                success: function(data) {
+                    let billsTableBody = $('#bills-table tbody');
+                    billsTableBody.empty();
+                    data.forEach(bill => {
+                        billsTableBody.append(`
+                            <tr>
+                                <td>${bill.BillID}</td>
+                                <td>${bill.AdmissionID}</td>
+                                <td>${bill.AmountPayable}</td>
+                                <td>${bill.AmountPaid}</td>
+                                <td>${bill.PaymentDate}</td>
+                                <td>${bill.PaymentStatus}</td>
+                                <td><button class="btn btn-info" onclick="editBill(${bill.BillID})">修改</button></td>
+                                <td><button class="btn btn-danger" onclick="deleteBill(${bill.BillID})">删除</button></td>
+                            </tr>
+                        `);
+                    });
+                },
+                error: function() {
+                    alert("无法加载账单信息");
+                }
+            });
+        }
+
+        // 显示添加订单模态框
+        function showAddBillModal() {
+            $('#addBillModal').modal('show');
+        }
+
+        // 提交添加订单表单
+        $('#addBillForm').submit(function(event) {
+            event.preventDefault();
+            const newBill = {
+                AdmissionID: $('#addAdmissionID').val(),
+                AmountPayable: $('#addAmountPayable').val(),
+                AmountPaid: $('#addAmountPaid').val(),
+                PaymentDate: $('#addPaymentDate').val(),
+                PaymentStatus: $('#addPaymentStatus').val()
+            };
+            $.ajax({
+                url: '/bills',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(newBill),
+                success: function() {
+                    $('#addBillModal').modal('hide');
+                    loadBills();
+                },
+                error: function() {
+                    alert("无法添加订单");
+                }
+            });
+        });
+
+        // 编辑账单信息
+        function editBill(billID) {
+            $.ajax({
+                url: `/bills/${billID}`,
+                method: 'GET',
+                success: function(bill) {
+                    $('#editBillID').val(bill.BillID);
+                    $('#editAdmissionID').val(bill.AdmissionID);
+                    $('#editAmountPayable').val(bill.AmountPayable);
+                    $('#editAmountPaid').val(bill.AmountPaid);
+                    $('#editPaymentDate').val(bill.PaymentDate);
+                    $('#editPaymentStatus').val(bill.PaymentStatus);
+                    $('#editBillModal').modal('show');
+                },
+                error: function() {
+                    alert("无法加载账单信息");
+                }
+            });
+        }
+
+        // 提交修改账单信息
+        $('#editBillForm').submit(function(event) {
+            event.preventDefault();
+            const billID = $('#editBillID').val();
+            const updatedBill = {
+                AdmissionID: $('#editAdmissionID').val(),
+                AmountPayable: $('#editAmountPayable').val(),
+                AmountPaid: $('#editAmountPaid').val(),
+                PaymentDate: $('#editPaymentDate').val(),
+                PaymentStatus: $('#editPaymentStatus').val()
+            };
+            $.ajax({
+                url: `/bills/${billID}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedBill),
+                success: function() {
+                    $('#editBillModal').modal('hide');
+                    loadBills();
+                },
+                error: function() {
+                    alert("无法更新账单信息");
+                }
+            });
+        });
+
+        // 删除账单信息
+        function deleteBill(billID) {
+            if (confirm("确定要删除这条记录吗？")) {
+                $.ajax({
+                    url: `/bills/${billID}`,
+                    method: 'DELETE',
+                    success: function() {
+                        loadBills();
+                    },
+                    error: function() {
+                        alert("无法删除账单信息");
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            loadBills();
+        });
+    </script>
+</body>
+</html>

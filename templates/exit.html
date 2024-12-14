@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医生信息</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #e0f7fa, #80deea);
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            margin: 40px auto;
+            max-width: 600px;
+        }
+
+        .el-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .el-form-item {
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            color: #007bff;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部标题 -->
+        <div class="header">
+            欢迎, {{ doctor.Name }}
+        </div>
+
+        <!-- 信息展示容器 -->
+        <div class="container">
+            <el-card>
+                <div slot="header" class="info-title">医生详细信息</div>
+                <el-form :model="doctor" label-width="120px">
+                    <el-form-item label="姓名">
+                        <el-input v-model="doctor.Name" disabled></el-input>
+                    </el-form-item>
+                    <el-form-item label="性别">
+                        <el-input v-model="doctor.Gender"></el-input>
+                    </el-form-item>
+                    <el-form-item label="科室">
+                        <el-input v-model="doctor.Department"></el-input>
+                    </el-form-item>
+                    <el-form-item label="职位">
+                        <el-input v-model="doctor.Position"></el-input>
+                    </el-form-item>
+                    <el-form-item label="账号">
+                        <el-input v-model="doctor.Username" disabled></el-input>
+                    </el-form-item>
+                </el-form>
+                <div class="button-container">
+                    <el-button type="primary" @click="updateDoctorInfo">修改信息</el-button>
+                    <el-button type="success" @click="startConsultation">开始问诊</el-button>
+                </div>
+            </el-card>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    doctor: {} // 初始医生信息为空
+                };
+            },
+            created() {
+                this.fetchDoctorInfo(); // 页面加载时获取医生信息
+            },
+            methods: {
+                fetchDoctorInfo() {
+                    axios.get('/doctor_info')
+                        .then(response => {
+                            this.doctor = response.data; // 成功获取数据
+                        })
+                        .catch(error => {
+                            this.$message.error('无法加载医生信息'); // 错误提示
+                        });
+                },
+                updateDoctorInfo() {
+                    axios.put('/update_doctor2', this.doctor)
+                        .then(response => {
+                            this.$message.success('信息更新成功');
+                        })
+                        .catch(error => {
+                            this.$message.error('信息更新失败');
+                        });
+                },
+                startConsultation() {
+                    window.location.href = 'solve.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
